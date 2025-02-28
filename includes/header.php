@@ -27,6 +27,12 @@
                         <li class="nav-item">
                             <a class="nav-link dropdown-toggle" href="">🇫🇷</a>
                         </li>
+                        </li>
+                        <li class="nav-item">
+                            <?php if (isset($_SESSION['user_id'])): ?>
+                            <a href="logout.php" class="btn btn-danger">Se déconnecter</a>
+                            <?php endif; ?>
+                        </li>
                 </ul>
             </div>
         </div>

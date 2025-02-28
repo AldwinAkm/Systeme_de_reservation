@@ -1,53 +1,82 @@
 <?php
-// src/controllers/AppointmentController.php
 
-include_once 'models/Appointment.php';
+namespace App\Controllers;
+
+use App\models\Appointment;
+use App\config\Database;
 
 class AppointmentController {
 
-    public function book() {
-        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    private $db;
+
+    public function __construct($db) {
+        $this->db = $db;
+    }
+
+    public function bookAppointment($user_id, $date, $time) {
+        // Vérifier si le créneau est disponible
+        $stmt = $this->db->prepare("SELECT * FROM appointments WHERE date = ? AND time = ?");
+        $stmt->execute([$date, $time]);
+        $existing = $stmt->fetch();
+
+        if ($existing) {
+            return false; // Créneau déjà pris
+        }
+
+        // Insérer le rendez-vous
+        $stmt = $this->db->prepare("INSERT INTO appointments (user_id, date, time) VALUES (?, ?, ?)");
+        return $stmt->execute([$user_id, $date, $time]);
+    }
+
+
+    private $appointment;
+
+    public function __construct() {
+        $this->appointment = new Appointment();
+    }
+
+    // Prendre un rendez-vous
+    public function bookAppointment() {
+        session_start();
+        if (!isset($_SESSION['user_id'])) {
+            header("Location: login.php");
+            exit;
+        }
+
+        if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $date = $_POST['date'];
             $time = $_POST['time'];
             $userId = $_SESSION['user_id'];
 
-            // Ajouter un rendez-vous à la base de données
-            Appointment::createAppointment($userId, $date, $time);
-            header("Location: ../public/calendar.php?success=appointment_booked");
+            if ($this->appointment->book($userId, $date, $time)) {
+                $_SESSION['success'] = "Rendez-vous pris avec succès !";
+            } else {
+                $_SESSION['error'] = "Créneau déjà occupé, choisissez une autre date/heure.";
+            }
+            header("Location: appointment.php");
+            exit;
         }
-    }
-
-    public function getAppointments() {
-        $userId = $_SESSION['user_id'];
-        return Appointment::getAppointmentsByUserId($userId);
-    }
-
-    // Afficher les rendez-vous
-    public function listAppointments() {
-        session_start();
-        if (!isset($_SESSION['user_id'])) {
-            header("Location: ../public/login.php");
-            exit();
-        }
-
-        $userId = $_SESSION['user_id'];
-        return Appointment::getUserAppointments($userId);
     }
 
     // Annuler un rendez-vous
     public function cancelAppointment() {
         session_start();
-        if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['appointment_id'])) {
-            $userId = $_SESSION['user_id'];
-            $appointmentId = $_POST['appointment_id'];
+        if (!isset($_SESSION['user_id'])) {
+            header("Location: login.php");
+            exit;
+        }
 
-            if (Appointment::cancelAppointment($appointmentId, $userId)) {
-                header("Location: ../public/calendar.php?message=" . urlencode("Rendez-vous annulé avec succès."));
+        if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['appointment_id'])) {
+            $appointmentId = $_POST['appointment_id'];
+            $userId = $_SESSION['user_id'];
+
+            if ($this->appointment->cancel($appointmentId, $userId)) {
+                $_SESSION['success'] = "Rendez-vous annulé avec succès.";
             } else {
-                header("Location: ../public/calendar.php?message=" . urlencode("Erreur lors de l'annulation."));
+                $_SESSION['error'] = "Impossible d'annuler ce rendez-vous.";
             }
-            exit();
+            header("Location: appointment.php");
+            exit;
         }
     }
 }
-?>

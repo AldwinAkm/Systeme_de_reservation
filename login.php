@@ -1,22 +1,24 @@
 <?php
 session_start();
 include_once 'config/database.php';
+use App\Controllers\AuthController;
 
-include '/src/controllers/AuthController.php';
+require_once __DIR__ . '/vendor/autoload.php';
+
 
 if (isset($_SESSION['user_id'])) {
     header("Location: profile.php");
     exit();
 }
 
-$auth = new AuthController();
+//$auth = new AuthController();
 
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
+/*if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $email = $_POST['email'];
     $password = $_POST['password'];
 
     $error = $auth->login($email, $password);
-}
+}*/
 
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
@@ -29,7 +31,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     if ($user && password_verify($password, $user['password'])) {
         $_SESSION['user_id'] = $user['id'];
-        header("Location: profile.php");
+        header("Location: Appointment.php");
         exit();
     } else {
         $error = "Email ou mot de passe incorrect.";

@@ -1,7 +1,8 @@
 <?php
 // src/controllers/UserController.php
 
-include_once 'models/User.php';
+include_once(__DIR__ . 'src/models/User.php');
+
 
 class UserController {
 

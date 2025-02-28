@@ -1,0 +1,15 @@
+{
+    "name": "jerya/systeme_de_reservation",
+    "autoload": {
+        "psr-4": {
+            "Jerya\\SystemeDeReservation\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "AldwinAkm",
+            "email": "jeryaklamavo@gmail.com"
+        }
+    ],
+    "require": {}
+}

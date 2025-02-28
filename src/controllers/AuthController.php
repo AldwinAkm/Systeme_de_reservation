@@ -1,7 +1,7 @@
 <?php
 session_start();
 include 'config/database.php';
-
+namespace App\Controllers;
 
 class AuthController {
     public function login($email, $password) {
